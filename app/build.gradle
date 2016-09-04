@@ -1,0 +1,46 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 24
+    buildToolsVersion "24.0.1"
+
+    defaultConfig {
+        applicationId "com.perculacreative.peter.popularmovies"
+        minSdkVersion 17
+        targetSdkVersion 24
+        versionCode 1
+        versionName "1.0"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+        applicationVariants.all { variant ->
+            variant.buildConfigField "String", "API_KEY", "\""+getApiKey()+"\""
+        }
+    }
+}
+
+// Using code from https://gist.github.com/curioustechizen/9f7d745f9f5f51355bd6 to keep API code secret
+def getApiKey(){
+    def Properties props = new Properties()
+    props.load(new FileInputStream(new File('secrets.properties')))
+    return props['API_KEY']
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    testCompile 'junit:junit:4.12'
+    compile 'com.android.support:appcompat-v7:24.2.0'
+    compile 'com.squareup.picasso:picasso:2.5.2'
+    compile 'com.android.support:support-v4:24.2.0'
+    compile 'com.android.support:design:24.2.0'
+}
+
+repositories {
+    mavenCentral()
+}
+
+
+
