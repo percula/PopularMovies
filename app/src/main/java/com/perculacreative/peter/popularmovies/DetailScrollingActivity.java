@@ -41,7 +41,7 @@ public class DetailScrollingActivity extends AppCompatActivity {
 
 
         // Get selected movie
-        MovieItem currentMovie = (MovieItem) getIntent().getParcelableExtra(MainActivity.CURRENT_MOVIE_KEY);
+        MovieItem currentMovie = (MovieItem) getIntent().getParcelableExtra(GridFragment.CURRENT_MOVIE_KEY);
 
         // Set title
         ((CollapsingToolbarLayout) findViewById(R.id.toolbar_layout)).setTitle(currentMovie.getmTitle());
