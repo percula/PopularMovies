@@ -19,11 +19,12 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".DetailScrollingActivity"
+            android:name=".DetailActivity"
             android:label="@string/title_activity_detail_scrolling"
-            android:theme="@style/AppTheme.NoActionBar"
-            android:parentActivityName="com.perculacreative.peter.popularmovies.MainActivity" >
-            ></activity>
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            >
+        </activity>
     </application>
 
 </manifest>
