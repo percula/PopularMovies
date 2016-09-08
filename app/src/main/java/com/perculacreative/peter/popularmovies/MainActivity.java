@@ -3,9 +3,12 @@ package com.perculacreative.peter.popularmovies;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 
 public class MainActivity extends AppCompatActivity implements GridFragment.Callback {
 
+    public static final String PREFS_KEY = "PREFERENCES";
+    public static final String PREFS_SORT_KEY = "SORT_ORDER";
 
     public static final String DETAILFRAGMENT_TAG = "DFTAG";
     public static final String GRIDFRAGMENT_TAG = "GRIDTAG";
@@ -35,7 +38,18 @@ public class MainActivity extends AppCompatActivity implements GridFragment.Call
 
             // Set detail fragment
             DetailFragment detailFragment = new DetailFragment();
-//            detailFragment.setArguments(args);
+
+            // If screen was just rotated, restore the previously selected movie
+            if (savedInstanceState != null && savedInstanceState.containsKey(MainActivity.SELECTED_MOVIE_KEY)) {
+                MovieItem selectedMovie = savedInstanceState.getParcelable(MainActivity.SELECTED_MOVIE_KEY);
+                if (selectedMovie != null) {
+                    Log.v("Restore in Activity", selectedMovie.getmTitle());
+                }
+                Bundle args = new Bundle();
+                args.putParcelable(SELECTED_MOVIE_KEY, selectedMovie);
+                detailFragment.setArguments(args);
+            }
+
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.fragment_detail_container, detailFragment, DETAILFRAGMENT_TAG)
                     .commit();
@@ -53,8 +67,6 @@ public class MainActivity extends AppCompatActivity implements GridFragment.Call
 
     @Override
     public void onItemSelected(MovieItem selectedMovie) {
-
-
         if (isMultipane) {
             Bundle args = new Bundle();
             args.putParcelable(SELECTED_MOVIE_KEY, selectedMovie);
@@ -71,9 +83,27 @@ public class MainActivity extends AppCompatActivity implements GridFragment.Call
 
             startActivity(detailIntent);
         }
-
-
     }
 
+    @Override
+    public void moviesLoaded() {
+        GridFragment gf = (GridFragment) getSupportFragmentManager().findFragmentByTag(GRIDFRAGMENT_TAG);
+        MovieItem selectedMovie = gf.getMovie(0);
+        Log.v("moviesloadedcallback", selectedMovie.getmTitle());
 
+        DetailFragment df = (DetailFragment) getSupportFragmentManager().findFragmentByTag(DETAILFRAGMENT_TAG);
+        if (df != null && df.getSelectedMovie() == null) {
+            onItemSelected(selectedMovie);
+        }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        DetailFragment df = (DetailFragment) getSupportFragmentManager().findFragmentByTag(DETAILFRAGMENT_TAG);
+        if (df != null && df.getSelectedMovie() != null) {
+            outState.putParcelable(MainActivity.SELECTED_MOVIE_KEY, df.getSelectedMovie());
+        }
+        GridFragment gf = (GridFragment) getSupportFragmentManager().findFragmentByTag(GRIDFRAGMENT_TAG);
+        super.onSaveInstanceState(outState);
+    }
 }
