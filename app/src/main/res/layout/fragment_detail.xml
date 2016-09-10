@@ -78,38 +78,7 @@
                 android:layout_height="wrap_content"
                 android:paddingTop="16dp"
                 android:textAppearance="?android:textAppearanceMedium" />
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="2dp"
-                android:layout_marginTop="8dp"
-                android:background="@android:color/darker_gray"/>
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:paddingTop="8dp"
-                android:textAppearance="?android:textAppearanceMedium"
-                android:text="@string/trailers"/>
-            <ListView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/video_list"/>
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="2dp"
-                android:layout_marginTop="8dp"
-                android:background="@android:color/darker_gray"/>
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:paddingTop="8dp"
-                android:textAppearance="?android:textAppearanceMedium"
-                android:text="@string/reviews"/>
-            <ListView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/review_list"/>
         </LinearLayout>
     </ScrollView>
+
 </LinearLayout>

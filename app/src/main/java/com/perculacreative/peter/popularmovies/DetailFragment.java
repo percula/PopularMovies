@@ -1,20 +1,15 @@
 package com.perculacreative.peter.popularmovies;
 
 
-import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
-import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
@@ -63,27 +58,27 @@ public class DetailFragment extends Fragment {
             // Do something if no movie provided yet
         } else {
             // Create variable for poster imageview for later use
-            ImageView backgroundImageView;
+//            ImageView backgroundImageView;
 
             // Determine if in multi-pane mode or not
-            if (getActivity().findViewById(R.id.toolbar_layout) != null) {
-                isMultipane = false;
-
-                // Set title for non-multipane mode
-                ((CollapsingToolbarLayout) getActivity().findViewById(R.id.toolbar_layout)).setTitle(mSelectedMovie.getmTitle());
-
-                // Find poster imageview
-                backgroundImageView = (ImageView) getActivity().findViewById(R.id.poster_background_activity);
-            } else {
-                isMultipane = true;
-
-                // Set fragment title to be visible (it is hidden when in activity mode)
-                ((RelativeLayout) view.findViewById(R.id.detail_fragment_title)).setVisibility(View.VISIBLE);
-                ((TextView) view.findViewById(R.id.title)).setText(mSelectedMovie.getmTitle());
-
-                // Find poster imageview
-                backgroundImageView = (ImageView) view.findViewById(R.id.poster_background_fragment);
-            }
+//            if (getActivity().findViewById(R.id.toolbar_layout) != null) {
+//                isMultipane = false;
+//
+//                // Set title for non-multipane mode
+//                ((CollapsingToolbarLayout) getActivity().findViewById(R.id.toolbar_layout)).setTitle(mSelectedMovie.getmTitle());
+//
+//                // Find poster imageview
+//                backgroundImageView = (ImageView) getActivity().findViewById(R.id.poster_background_activity);
+//            } else {
+//                isMultipane = true;
+//
+//                // Set fragment title to be visible (it is hidden when in activity mode)
+//                ((RelativeLayout) view.findViewById(R.id.detail_fragment_title)).setVisibility(View.VISIBLE);
+//                ((TextView) view.findViewById(R.id.title)).setText(mSelectedMovie.getmTitle());
+//
+//                // Find poster imageview
+//                backgroundImageView = (ImageView) view.findViewById(R.id.poster_background_fragment);
+//            }
 
 
             // Set release date
@@ -107,39 +102,12 @@ public class DetailFragment extends Fragment {
             String plot = String.format(getString(R.string.plot), mSelectedMovie.getmPlot());
             ((TextView) view.findViewById(R.id.plot)).setText(plot);
 
-            // Set video list
-            final VideoAdapter videoAdapter = new VideoAdapter(getActivity(), mSelectedMovie.getmVideos());
-            ListView videoListView = (ListView) view.findViewById(R.id.video_list);
-            videoListView.setAdapter(videoAdapter);
-            videoListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                @Override
-                public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                    VideoItem selectedVideo = videoAdapter.getItem(i);
-                    final String YOUTUBE_BASE_URL = "https://www.youtube.com/watch";
-                    final String VIDEO_KEY = "v";
-                    Uri videoURI = Uri.parse(YOUTUBE_BASE_URL)
-                            .buildUpon().appendQueryParameter(VIDEO_KEY, selectedVideo.getmURLKey())
-                            .build();
-                    Log.v("YoutubeURL", videoURI.toString());
-                    startActivity(new Intent(Intent.ACTION_VIEW, videoURI));
-                }
-            });
-
-            // Set review list
-            final ReviewAdapter reviewAdapter = new ReviewAdapter(getActivity(), mSelectedMovie.getmReviews());
-            ListView reviewListView = (ListView) view.findViewById(R.id.review_list);
-            reviewListView.setAdapter(reviewAdapter);
-
-            ListUtils.setDynamicHeight(videoListView);
-            ListUtils.setDynamicHeight(reviewListView);
-
-
             // Set poster
             ImageView imageView = (ImageView) view.findViewById(R.id.image);
             Picasso.with(getContext()).load("http://image.tmdb.org/t/p/w185/" + mSelectedMovie.getmPoster()).into(imageView);
 
             // Add image to toolbar background
-            Picasso.with(getContext()).load("http://image.tmdb.org/t/p/w185/" + mSelectedMovie.getmPoster()).transform(new BlurTransformation(getContext())).into(backgroundImageView);
+//            Picasso.with(getContext()).load("http://image.tmdb.org/t/p/w185/" + mSelectedMovie.getmPoster()).transform(new BlurTransformation(getContext())).into(backgroundImageView);
         }
         return view;
     }

@@ -50,10 +50,10 @@ public class ReviewAdapter extends ArrayAdapter<ReviewItem> {
         ReviewItem currentReview = getItem(position);
 
         String review = currentReview.getmContent();
-        if (review.length() > 140) {
-            review = currentReview.getmContent()
-                    .substring(0, 140) + "...";
-        }
+//        if (review.length() > 140) {
+//            review = currentReview.getmContent()
+//                    .substring(0, 140) + "...";
+//        }
 
         // Find the textview and set the text
         ((TextView) listItemView.findViewById(R.id.review_list_author)).setText(currentReview.getmAuthor());

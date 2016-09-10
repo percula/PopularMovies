@@ -68,6 +68,14 @@ public class MovieItem implements Parcelable {
         mReviews = reviews;
     }
 
+    public boolean hasVideos() {
+        return (mVideos.size() > 0);
+    }
+
+    public boolean hasReviews() {
+        return (mReviews.size() > 0);
+    }
+
     // Code to save instance state, with help from http://stackoverflow.com/questions/12503836/how-to-save-custom-arraylist-on-android-screen-rotate
     private MovieItem(Parcel parcel) {
         mID = parcel.readString();
