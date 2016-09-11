@@ -17,6 +17,7 @@ public class MovieItem implements Parcelable {
     private String mVote;
     private ArrayList<VideoItem> mVideos = new ArrayList<>();
     private ArrayList<ReviewItem> mReviews = new ArrayList<>();
+    private Boolean mIsFavorite;
 
     public MovieItem(String id, String title, String poster, String release, String vote, String plot) {
         mID = id;
@@ -75,6 +76,7 @@ public class MovieItem implements Parcelable {
     public boolean hasReviews() {
         return (mReviews.size() > 0);
     }
+
 
     // Code to save instance state, with help from http://stackoverflow.com/questions/12503836/how-to-save-custom-arraylist-on-android-screen-rotate
     private MovieItem(Parcel parcel) {

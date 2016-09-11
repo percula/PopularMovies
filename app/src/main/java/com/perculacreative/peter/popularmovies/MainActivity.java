@@ -1,17 +1,29 @@
 package com.perculacreative.peter.popularmovies;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.support.annotation.IdRes;
+import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.View;
+import android.widget.ImageButton;
 
-import com.roughike.bottombar.BottomBar;
-import com.roughike.bottombar.OnMenuTabClickListener;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+import org.json.JSONException;
+
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements GridFragment.Callback {
+
+    private final String LOG_TAG = MainActivity.class.getSimpleName();
 
     public static final String PREFS_KEY = "PREFERENCES";
     public static final String PREFS_SORT_KEY = "SORT_ORDER";
@@ -23,11 +35,14 @@ public class MainActivity extends AppCompatActivity implements GridFragment.Call
     public static final String GRIDFRAGMENT_TAG = "GRIDTAG";
     private boolean isMultipane;
 
-    private BottomBar mBottomBar;
     private MovieItem mSelectedMovie;
 
     public static final String SELECTED_MOVIE_KEY = "SELECTED_MOVIE";
-    public static final String MOVIE_LIST_KEY = "MOVIE_LIST";
+
+    public static final String FAVORITE_STRING_KEY = "FAVORITES_STRING";
+    public static final String FAVORITES_KEY = "FAVORITES";
+    public static final String FAVORITE_MOVIES_KEY = "FAVORITE_MOVIES";
+    private ArrayList<MovieItem> mFavoriteMovies = new ArrayList<>();
 
 
     @Override
@@ -35,12 +50,38 @@ public class MainActivity extends AppCompatActivity implements GridFragment.Call
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-//        setBottomBar(savedInstanceState);
-
         final FragmentManager fm = getSupportFragmentManager();
+
+        // Get favorite movies
+        try {
+            loadFavoriteMovies();
+        } catch (JSONException e) {
+            Log.e(LOG_TAG, e.getMessage(), e);
+            e.printStackTrace();
+        }
 
         if (findViewById(R.id.fragment_detail) != null) {
             isMultipane = true;
+
+            // Create FAB
+            FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+            fab.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if (mSelectedMovie != null && !isFavorite(mSelectedMovie)) {
+                        Snackbar.make(view, getResources().getString(R.string.favorite_action), Snackbar.LENGTH_SHORT)
+                                .setAction("Action", null).show();
+                        mFavoriteMovies.add(mSelectedMovie);
+                        setFABIcon();
+                    } else if (mSelectedMovie != null && isFavorite(mSelectedMovie)) {
+                        Snackbar.make(view, getResources().getString(R.string.unfavorite_action), Snackbar.LENGTH_SHORT)
+                                .setAction("Action", null).show();
+                        ((FloatingActionButton) view).setImageResource(R.drawable.ic_star_border_white_24dp);
+                        removeFavorite(mSelectedMovie);
+                        setFABIcon();
+                    }
+                }
+            });
 
             // Set grid fragment
             GridFragment gridFragment;
@@ -56,33 +97,56 @@ public class MainActivity extends AppCompatActivity implements GridFragment.Call
 
             // Set detail fragment
             Fragment detailFragment;
-            Fragment videoFragment;
-            Fragment reviewFragment;
             if (savedInstanceState != null) {
-                detailFragment = (Fragment) fm.getFragment(savedInstanceState, DETAILFRAGMENT_TAG);
-                videoFragment = (Fragment) fm.getFragment(savedInstanceState, VIDEOFRAGMENT_TAG);
-                reviewFragment = (Fragment) fm.getFragment(savedInstanceState, REVIEWFRAGMENT_TAG);
-                Log.v("Get DetailFragment", "Restore DetailFragment");
+                // Retrieve selected movie
+                if (savedInstanceState.containsKey(MainActivity.SELECTED_MOVIE_KEY)) {
+                    mSelectedMovie = savedInstanceState.getParcelable(MainActivity.SELECTED_MOVIE_KEY);
+                }
+                // Retrieve favorite movies
+                if (savedInstanceState.containsKey(MainActivity.FAVORITE_MOVIES_KEY)) {
+                    mFavoriteMovies = savedInstanceState.getParcelableArrayList(MainActivity.FAVORITE_MOVIES_KEY);
+                }
             } else {
+                // If no saved instance state, create a new DetailFragment
                 detailFragment = new DetailFragment();
-                videoFragment = new VideoFragment();
-                reviewFragment = new ReviewFragment();
-                Log.v("Get DetailFragment", "New DetailFragment");
+                fm.beginTransaction()
+                        .replace(R.id.fragment_detail, detailFragment, DETAILFRAGMENT_TAG).commit();
             }
 
-//            // If screen was just rotated, restore the previously selected movie
-//            if (savedInstanceState != null && savedInstanceState.containsKey(MainActivity.SELECTED_MOVIE_KEY)) {
-//                MovieItem selectedMovie = savedInstanceState.getParcelable(MainActivity.SELECTED_MOVIE_KEY);
-//                if (selectedMovie != null) {
-//                    Log.v("Restore in Activity", selectedMovie.getmTitle());
-//                }
-//                Bundle args = new Bundle();
-//                args.putParcelable(SELECTED_MOVIE_KEY, selectedMovie);
-//                detailFragment.setArguments(args);
-//            }
+            // Determine which detail fragment is shown and set button clicked
+            String currentTag;
+            if (fm.findFragmentById(R.id.fragment_detail) != null) {
+                currentTag = fm.findFragmentById(R.id.fragment_detail).getTag();
+            } else {
+                // If no tag, assume info tab is selected
+                currentTag = DETAILFRAGMENT_TAG;
+            }
+            if (currentTag.equals(DETAILFRAGMENT_TAG)) {
+                setSelectedButton(true, false, false);
+            }
+            if (currentTag.equals(VIDEOFRAGMENT_TAG)) {
+                setSelectedButton(false, true, false);
+            }
+            if (currentTag.equals(REVIEWFRAGMENT_TAG)) {
+                setSelectedButton(false, false, true);
+            }
 
-            fm.beginTransaction()
-                    .replace(R.id.fragment_detail, detailFragment, DETAILFRAGMENT_TAG).commit();
+            // Setup bottom bar buttons
+            findViewById(R.id.movie_info).setOnClickListener(new View.OnClickListener() {
+                public void onClick(View v) {
+                    setInfoFragment();
+                }
+            });
+            findViewById(R.id.movie_videos).setOnClickListener(new View.OnClickListener() {
+                public void onClick(View v) {
+                    setVideoFragment();
+                }
+            });
+            findViewById(R.id.movie_reviews).setOnClickListener(new View.OnClickListener() {
+                public void onClick(View v) {
+                    setReviewFragment();
+                }
+            });
 
         } else {
             isMultipane = false;
@@ -93,58 +157,104 @@ public class MainActivity extends AppCompatActivity implements GridFragment.Call
                     .replace(R.id.fragment_container, gridFragment, GRIDFRAGMENT_TAG)
                     .commit();
         }
-
-
     }
 
-    private void setBottomBar(Bundle savedInstanceState) {
-        // Using WONDERFUL code for the bottom bar from roughike.com. Very easy to implement =)
-        // Using previous version since there is a bug in the latest 2.0.2 release
-        mBottomBar = BottomBar.attach(this, savedInstanceState);
-        mBottomBar.useDarkTheme();
-        mBottomBar.setItems(R.menu.bottombar_menu);
-        mBottomBar.setOnMenuTabClickListener(new OnMenuTabClickListener() {
-            @Override
-            public void onMenuTabSelected(@IdRes int menuItemId) {
-                if (menuItemId == R.id.movie_info) {
-                    setInfoFragment();
-                }
-                if (menuItemId == R.id.movie_trailers) {
-                    setVideoFragment();
-                }
-                if (menuItemId == R.id.movie_reviews) {
-                    setReviewFragment();
-                }
-            }
+    private void loadFavoriteMovies()
+            throws JSONException {
+        // Get favorites from sharedpreferences
+        SharedPreferences prefs = getSharedPreferences(PREFS_KEY, 0);
+        String favoriteString = prefs.getString(FAVORITE_STRING_KEY, null);
+        if (favoriteString != null) {
+            Log.v("favoriteString", favoriteString);
+            Type type = new TypeToken<List<MovieItem>>() {
+            }.getType();
+            Gson gson = new Gson();
+            mFavoriteMovies = gson.fromJson(favoriteString, type);
+        }
+    }
 
-            @Override
-            public void onMenuTabReSelected(@IdRes int menuItemId) {
-                if (menuItemId == R.id.movie_info) {
-                    setInfoFragment();
-                }
-                if (menuItemId == R.id.movie_trailers) {
-                    setVideoFragment();
-                }
-                if (menuItemId == R.id.movie_reviews) {
-                    setReviewFragment();
-                }
+    private void saveFavoriteMovies() {
+        Gson gson = new Gson();
+        String favoritesList = gson.toJson(mFavoriteMovies);
+
+        SharedPreferences settings = getSharedPreferences(MainActivity.PREFS_KEY, 0);
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putString(MainActivity.FAVORITE_STRING_KEY, favoritesList).apply();
+    }
+
+    private boolean isFavorite(MovieItem movieItem) {
+        for (int i = 0; i < mFavoriteMovies.size(); i++) {
+            if (mSelectedMovie.getmID().equals(mFavoriteMovies.get(i).getmID())) {
+                Log.v("Favorite?", "Yes");
+                return true;
             }
-        });
+        }
+        Log.v("Favorite?", "No");
+        return false;
+    }
+
+    private void removeFavorite(MovieItem movieItem) {
+        for (int i = 0; i < mFavoriteMovies.size(); i++) {
+            if (mSelectedMovie.getmID().equals(mFavoriteMovies.get(i).getmID())) {
+                mFavoriteMovies.remove(i);
+            }
+        }
+    }
+
+    private void setFABIcon() {
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        if (isFavorite(mSelectedMovie)) {
+            fab.setImageResource(R.drawable.ic_star_white_24dp);
+        } else {
+            fab.setImageResource(R.drawable.ic_star_border_white_24dp);
+        }
+    }
+
+    private void setSelectedButton(boolean left, boolean middle, boolean right) {
+        ImageButton v1 = (ImageButton) findViewById(R.id.movie_info);
+        ImageButton v2 = (ImageButton) findViewById(R.id.movie_videos);
+        ImageButton v3 = (ImageButton) findViewById(R.id.movie_reviews);
+
+        float pressed = 0.8f;
+        float normal = 1.0f;
+
+        if (left) {
+            v1.setAlpha(pressed);
+            v2.setAlpha(normal);
+            v3.setAlpha(normal);
+        }
+        if (middle) {
+            v1.setAlpha(normal);
+            v2.setAlpha(pressed);
+            v3.setAlpha(normal);
+        }
+        if (right) {
+            v1.setAlpha(normal);
+            v2.setAlpha(normal);
+            v3.setAlpha(pressed);
+        }
     }
 
     private void setInfoFragment() {
-        Bundle args = new Bundle();
-        args.putParcelable(MainActivity.SELECTED_MOVIE_KEY, mSelectedMovie);
+        setSelectedButton(true, false, false);
 
         DetailFragment detailFragment = new DetailFragment();
-        detailFragment.setArguments(args);
+
+        if (mSelectedMovie != null) {
+            Bundle args = new Bundle();
+            args.putParcelable(MainActivity.SELECTED_MOVIE_KEY, mSelectedMovie);
+            detailFragment.setArguments(args);
+        }
 
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.fragment_detail, detailFragment, MainActivity.DETAILFRAGMENT_TAG)
                 .commit();
     }
 
+
     private void setVideoFragment() {
+        setSelectedButton(false, true, false);
+
         Bundle args = new Bundle();
         args.putParcelable(MainActivity.SELECTED_MOVIE_KEY, mSelectedMovie);
 
@@ -157,6 +267,8 @@ public class MainActivity extends AppCompatActivity implements GridFragment.Call
     }
 
     private void setReviewFragment() {
+        setSelectedButton(false, false, true);
+
         Bundle args = new Bundle();
         args.putParcelable(MainActivity.SELECTED_MOVIE_KEY, mSelectedMovie);
 
@@ -173,15 +285,8 @@ public class MainActivity extends AppCompatActivity implements GridFragment.Call
         if (isMultipane) {
             mSelectedMovie = selectedMovie;
 
-            Bundle args = new Bundle();
-            args.putParcelable(SELECTED_MOVIE_KEY, selectedMovie);
-
-            DetailFragment fragment = new DetailFragment();
-            fragment.setArguments(args);
-
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_detail, fragment, DETAILFRAGMENT_TAG)
-                    .commit();
+            setInfoFragment();
+            setFABIcon();
         } else {
             Intent detailIntent = new Intent(this, DetailActivity.class);
             detailIntent.putExtra(SELECTED_MOVIE_KEY, selectedMovie);
@@ -191,13 +296,13 @@ public class MainActivity extends AppCompatActivity implements GridFragment.Call
     }
 
     @Override
-    public void moviesLoaded() {
+    public void moviesLoaded(MovieItem firstMovie) {
         if (isMultipane) {
-            GridFragment gf = (GridFragment) getSupportFragmentManager().findFragmentByTag(GRIDFRAGMENT_TAG);
-            mSelectedMovie = gf.getMovie(0);
-            Log.v("SelectedTitle",mSelectedMovie.getmTitle());
+            mSelectedMovie = firstMovie;
+            Log.v("SelectedTitle", mSelectedMovie.getmTitle());
 
             setInfoFragment();
+            setFABIcon();
         }
     }
 
@@ -220,5 +325,17 @@ public class MainActivity extends AppCompatActivity implements GridFragment.Call
         if (gf != null) {
             getSupportFragmentManager().putFragment(outState, GRIDFRAGMENT_TAG, gf);
         }
+        if (mSelectedMovie != null) {
+            outState.putParcelable(SELECTED_MOVIE_KEY, mSelectedMovie);
+        }
+        if (mFavoriteMovies != null) {
+            outState.putParcelableArrayList(FAVORITE_MOVIES_KEY, mFavoriteMovies);
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        saveFavoriteMovies();
     }
 }

@@ -45,6 +45,7 @@ public class GridFragment extends Fragment implements PopupMenu.OnMenuItemClickL
     private ArrayList<MovieItem> mMovieList = new ArrayList<MovieItem>();
 
     private boolean mSortOrderPopular;
+    private boolean mSortOrderFavorites;
 
     private String API_KEY_LABEL = "api_key";
     private String API_KEY = BuildConfig.API_KEY;
@@ -65,7 +66,7 @@ public class GridFragment extends Fragment implements PopupMenu.OnMenuItemClickL
          * DetailFragmentCallback for when an item has been selected.
          */
         public void onItemSelected(MovieItem selectedMovie);
-        public void moviesLoaded();
+        public void moviesLoaded(MovieItem firstMovie);
     }
 
 
@@ -79,6 +80,7 @@ public class GridFragment extends Fragment implements PopupMenu.OnMenuItemClickL
         if (savedInstanceState != null) {
             mMovieList = savedInstanceState.getParcelableArrayList(MOVIE_LIST_KEY);
             Log.v("Retrieved Movie List", mMovieList.size() + "");
+
         } else {
             getMovieData(rootView);
         }
@@ -126,7 +128,6 @@ public class GridFragment extends Fragment implements PopupMenu.OnMenuItemClickL
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.sort_order:
-                Log.v("Sort Order", "Clicked");
                 showSortMenu();
                 return true;
             default:
@@ -198,13 +199,15 @@ public class GridFragment extends Fragment implements PopupMenu.OnMenuItemClickL
             case R.id.sort_popular:
                 mSortOrderPopular = true;
                 getMovieData(getView());
-                Log.v("SORT_ORDER", mSortOrderPopular + "");
                 return true;
             case R.id.sort_rated:
                 mSortOrderPopular = false;
                 getMovieData(getView());
-                Log.v("SORT_ORDER", mSortOrderPopular + "");
                 return true;
+//            case R.id.sort_favorites:
+//                mSortOrderPopular = false;
+//                mSortOrderFavorites = true;
+
             default:
                 return false;
         }
@@ -366,7 +369,7 @@ public class GridFragment extends Fragment implements PopupMenu.OnMenuItemClickL
 
             // If there were any movies downloaded, show the first one by default
             if (mMovieList.size() > 0) {
-                ((Callback) getActivity()).moviesLoaded();
+                ((Callback) getActivity()).moviesLoaded(mMovieList.get(0));
             }
         }
     }

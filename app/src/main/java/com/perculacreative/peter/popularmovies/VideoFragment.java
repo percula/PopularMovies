@@ -232,4 +232,10 @@ public class VideoFragment extends Fragment {
             Log.v("done", "done");
         }
     }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelable(MainActivity.SELECTED_MOVIE_KEY,mSelectedMovie);
+    }
 }

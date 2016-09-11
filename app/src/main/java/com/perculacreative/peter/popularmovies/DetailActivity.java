@@ -109,7 +109,6 @@ public class DetailActivity extends AppCompatActivity {
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-
         mBottomBar.onSaveInstanceState(outState);
     }
 }

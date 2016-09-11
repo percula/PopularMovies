@@ -23,9 +23,6 @@ import java.util.Locale;
 public class DetailFragment extends Fragment {
 
     private MovieItem mSelectedMovie;
-    public static final String SELECTED_MOVIE_KEY = "SELECTED_MOVIE";
-
-    private boolean isMultipane;
 
     public DetailFragment() {
         // Required empty public constructor
@@ -38,29 +35,21 @@ public class DetailFragment extends Fragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_detail, container, false);
 
+        // Restore selected movie from screen rotation
         if (savedInstanceState != null) {
-            if (savedInstanceState.containsKey(SELECTED_MOVIE_KEY)) {
+            if (savedInstanceState.containsKey(MainActivity.SELECTED_MOVIE_KEY)) {
                 mSelectedMovie = savedInstanceState.getParcelable(MainActivity.SELECTED_MOVIE_KEY);
                 savedInstanceState.clear();
-//                Log.v("Get Movie From Save", mSelectedMovie.getmTitle());
-            } else {
-                Log.v("Get Movie From Save", "null");
             }
         }
 
-        // Get selected movie
+        // Restore selected movie from fragment creation
         Bundle bundle = this.getArguments();
-
-        // Restore selected movie on screen rotation or from fragment creation
         if (bundle != null) {
             if (bundle.containsKey(MainActivity.SELECTED_MOVIE_KEY)) {
                 mSelectedMovie = bundle.getParcelable(MainActivity.SELECTED_MOVIE_KEY);
                 bundle.clear();
-//                Log.v("Get Movie From Bundle", mSelectedMovie.getmTitle());
-            } else {
-                Log.v("Get Movie From Bundle", "null");
             }
-
         }
 
         // Check if a movie has been selected
@@ -69,6 +58,15 @@ public class DetailFragment extends Fragment {
             Log.v("Selected Movie", "Is Null");
             return view;
         } else {
+            // Set title if in multipane mode
+            Boolean isMultipane = getActivity().getSupportFragmentManager().findFragmentByTag(MainActivity.GRIDFRAGMENT_TAG) != null;
+            TextView titleTextView = (TextView) view.findViewById(R.id.title);
+            if (isMultipane) {
+                String title = mSelectedMovie.getmTitle();
+                titleTextView.setText(title);
+            } else {
+                titleTextView.setText(R.string.info);
+            }
 
             // Set release date
             String date = mSelectedMovie.getmRelease();
@@ -101,6 +99,6 @@ public class DetailFragment extends Fragment {
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putParcelable(SELECTED_MOVIE_KEY,mSelectedMovie);
+        outState.putParcelable(MainActivity.SELECTED_MOVIE_KEY,mSelectedMovie);
     }
 }

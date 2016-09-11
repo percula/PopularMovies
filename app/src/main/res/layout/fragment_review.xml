@@ -1,4 +1,21 @@
-<ListView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/review_list"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent" />
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="com.perculacreative.peter.popularmovies.DetailFragment">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/reviews"
+        android:padding="8dp"
+        android:background="@color/colorAccent"
+        android:textAppearance="?android:textAppearanceMedium" />
+
+    <ListView
+        android:id="@+id/review_list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
+</LinearLayout>

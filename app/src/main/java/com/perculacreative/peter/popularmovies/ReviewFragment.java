@@ -197,4 +197,10 @@ public class ReviewFragment extends Fragment {
         }
     }
 
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelable(MainActivity.SELECTED_MOVIE_KEY,mSelectedMovie);
+    }
+
 }
