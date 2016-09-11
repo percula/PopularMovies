@@ -23,6 +23,9 @@ import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -31,15 +34,19 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.List;
 
 
 /**
  * A simple {@link Fragment} subclass.
  */
 public class GridFragment extends Fragment implements PopupMenu.OnMenuItemClickListener{
+
+    private final String LOG_TAG = GridFragment.class.getSimpleName();
 
     private MoviePosterAdapter mMovieAdapter;
     private ArrayList<MovieItem> mMovieList = new ArrayList<MovieItem>();
@@ -51,6 +58,8 @@ public class GridFragment extends Fragment implements PopupMenu.OnMenuItemClickL
     private String API_KEY = BuildConfig.API_KEY;
 
     public static final String MOVIE_LIST_KEY = "MOVIE_LIST";
+
+    private ArrayList<MovieItem> mFavoriteMovies = new ArrayList<>();
 
     public GridFragment() {
         // Required empty public constructor
@@ -104,6 +113,20 @@ public class GridFragment extends Fragment implements PopupMenu.OnMenuItemClickL
         });
 
         return rootView;
+    }
+
+    private void loadFavoriteMovies()
+            throws JSONException {
+        // Get favorites from sharedpreferences
+        SharedPreferences prefs = getActivity().getSharedPreferences(MainActivity.PREFS_KEY, 0);
+        String favoriteString = prefs.getString(MainActivity.FAVORITE_STRING_KEY, null);
+        if (favoriteString != null) {
+            Log.v("favoriteString", favoriteString);
+            Type type = new TypeToken<List<MovieItem>>() {
+            }.getType();
+            Gson gson = new Gson();
+            mFavoriteMovies = gson.fromJson(favoriteString, type);
+        }
     }
 
     @Override
@@ -185,10 +208,14 @@ public class GridFragment extends Fragment implements PopupMenu.OnMenuItemClickL
         PopupMenu sortPopup = new PopupMenu(getActivity(), sortButton);
         sortPopup.setOnMenuItemClickListener(this);
         sortPopup.getMenuInflater().inflate(R.menu.sort, sortPopup.getMenu());
-        if (mSortOrderPopular) {
+        if (mSortOrderPopular && !mSortOrderFavorites) {
             sortPopup.getMenu().getItem(0).setChecked(true);
-        } else {
+        }
+        if (!mSortOrderPopular && !mSortOrderFavorites) {
             sortPopup.getMenu().getItem(1).setChecked(true);
+        }
+        if (mSortOrderFavorites) {
+            sortPopup.getMenu().getItem(2).setChecked(true);
         }
         sortPopup.show();
     }
@@ -198,16 +225,34 @@ public class GridFragment extends Fragment implements PopupMenu.OnMenuItemClickL
         switch (item.getItemId()) {
             case R.id.sort_popular:
                 mSortOrderPopular = true;
+                mSortOrderFavorites = false;
                 getMovieData(getView());
                 return true;
             case R.id.sort_rated:
                 mSortOrderPopular = false;
+                mSortOrderFavorites = false;
                 getMovieData(getView());
                 return true;
-//            case R.id.sort_favorites:
-//                mSortOrderPopular = false;
-//                mSortOrderFavorites = true;
+            case R.id.sort_favorites:
+                mSortOrderPopular = false;
+                mSortOrderFavorites = true;
 
+                // Get favorite movies
+                try {
+                    loadFavoriteMovies();
+                } catch (JSONException e) {
+                    Log.e(LOG_TAG, e.getMessage(), e);
+                    e.printStackTrace();
+                }
+
+                mMovieList.clear();
+                mMovieList.addAll(mFavoriteMovies);
+                mMovieAdapter.notifyDataSetChanged();
+
+                // If there are any favorite movies, show the first one by default
+                if (mMovieList.size() > 0) {
+                    ((Callback) getActivity()).moviesLoaded(mMovieList.get(0));
+                }
             default:
                 return false;
         }

@@ -5,6 +5,7 @@
     <string name="sort_order">Sort Order</string>
     <string name="sort_popular">Most Popular</string>
     <string name="sort_rated">Highest Rated</string>
+    <string name="sort_favorites">Favorites</string>
     <string name="network_error">Unable to download movie data. Please check your internet connection.</string>
     <string name="loading">Loading Movies &#8230; </string>
 

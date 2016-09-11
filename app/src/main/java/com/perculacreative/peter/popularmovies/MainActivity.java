@@ -40,7 +40,6 @@ public class MainActivity extends AppCompatActivity implements GridFragment.Call
     public static final String SELECTED_MOVIE_KEY = "SELECTED_MOVIE";
 
     public static final String FAVORITE_STRING_KEY = "FAVORITES_STRING";
-    public static final String FAVORITES_KEY = "FAVORITES";
     public static final String FAVORITE_MOVIES_KEY = "FAVORITE_MOVIES";
     private ArrayList<MovieItem> mFavoriteMovies = new ArrayList<>();
 
@@ -73,12 +72,14 @@ public class MainActivity extends AppCompatActivity implements GridFragment.Call
                                 .setAction("Action", null).show();
                         mFavoriteMovies.add(mSelectedMovie);
                         setFABIcon();
+                        saveFavoriteMovies();
                     } else if (mSelectedMovie != null && isFavorite(mSelectedMovie)) {
                         Snackbar.make(view, getResources().getString(R.string.unfavorite_action), Snackbar.LENGTH_SHORT)
                                 .setAction("Action", null).show();
                         ((FloatingActionButton) view).setImageResource(R.drawable.ic_star_border_white_24dp);
                         removeFavorite(mSelectedMovie);
                         setFABIcon();
+                        saveFavoriteMovies();
                     }
                 }
             });
