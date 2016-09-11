@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.PopupMenu;
+import android.support.v7.widget.SearchView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -44,7 +45,7 @@ import java.util.List;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class GridFragment extends Fragment implements PopupMenu.OnMenuItemClickListener{
+public class GridFragment extends Fragment implements PopupMenu.OnMenuItemClickListener {
 
     private final String LOG_TAG = GridFragment.class.getSimpleName();
 
@@ -53,6 +54,8 @@ public class GridFragment extends Fragment implements PopupMenu.OnMenuItemClickL
 
     private boolean mSortOrderPopular;
     private boolean mSortOrderFavorites;
+    private boolean mSortOrderSearch;
+
 
     private String API_KEY_LABEL = "api_key";
     private String API_KEY = BuildConfig.API_KEY;
@@ -75,6 +78,7 @@ public class GridFragment extends Fragment implements PopupMenu.OnMenuItemClickL
          * DetailFragmentCallback for when an item has been selected.
          */
         public void onItemSelected(MovieItem selectedMovie);
+
         public void moviesLoaded(MovieItem firstMovie);
     }
 
@@ -91,7 +95,7 @@ public class GridFragment extends Fragment implements PopupMenu.OnMenuItemClickL
             Log.v("Retrieved Movie List", mMovieList.size() + "");
 
         } else {
-            getMovieData(rootView);
+            getMovieData(rootView, "");
         }
 
         // Restore preferences
@@ -138,13 +142,34 @@ public class GridFragment extends Fragment implements PopupMenu.OnMenuItemClickL
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putParcelableArrayList(MOVIE_LIST_KEY,mMovieList);
+        outState.putParcelableArrayList(MOVIE_LIST_KEY, mMovieList);
         Log.v("Putting Array List", "NOW");
     }
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.menu_grid, menu);
+
+        final MenuItem myActionMenuItem = menu.findItem(R.id.action_search);
+        final SearchView searchView = (SearchView) myActionMenuItem.getActionView();
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                if (!searchView.isIconified()) {
+                    searchView.setIconified(true);
+                }
+                myActionMenuItem.collapseActionView();
+                mSortOrderSearch = true;
+                Log.v("SearchQuery", query);
+                getMovieData(getView(), query);
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String s) {
+                return false;
+            }
+        });
     }
 
     @Override
@@ -168,28 +193,19 @@ public class GridFragment extends Fragment implements PopupMenu.OnMenuItemClickL
         editor.putBoolean(MainActivity.PREFS_SORT_KEY, mSortOrderPopular).apply();
     }
 
-    private void getMovieData(View view) {
+    private void getMovieData(View view, String searchQuery) {
         mMovieList.clear();
 
         if (isOnline()) {
             view.findViewById(R.id.network_error).setVisibility(View.GONE);
             FetchMoviesTask moviesTask = new FetchMoviesTask();
-            moviesTask.execute();
+            moviesTask.execute(searchQuery);
         } else {
             mMovieAdapter.notifyDataSetChanged();
             view.findViewById(R.id.network_error).setVisibility(View.VISIBLE);
             Toast.makeText(getContext(), getString(R.string.network_error), Toast.LENGTH_SHORT).show();
         }
     }
-
-    public MovieItem getMovie(int i) {
-        return mMovieList.get(i);
-    }
-
-    public ArrayList<MovieItem> getMovieList() {
-        return mMovieList;
-    }
-
 
     /**
      * This checks if there is an internet connection. This is from http://stackoverflow.com/a/4009133.
@@ -226,12 +242,12 @@ public class GridFragment extends Fragment implements PopupMenu.OnMenuItemClickL
             case R.id.sort_popular:
                 mSortOrderPopular = true;
                 mSortOrderFavorites = false;
-                getMovieData(getView());
+                getMovieData(getView(), "");
                 return true;
             case R.id.sort_rated:
                 mSortOrderPopular = false;
                 mSortOrderFavorites = false;
-                getMovieData(getView());
+                getMovieData(getView(), "");
                 return true;
             case R.id.sort_favorites:
                 mSortOrderPopular = false;
@@ -259,7 +275,7 @@ public class GridFragment extends Fragment implements PopupMenu.OnMenuItemClickL
     }
 
 
-    public class FetchMoviesTask extends AsyncTask<Void, Void, String[]> {
+    public class FetchMoviesTask extends AsyncTask<String, Void, String[]> {
 
         private final String LOG_TAG = FetchMoviesTask.class.getSimpleName();
         private ProgressDialog progressDialog;
@@ -328,34 +344,56 @@ public class GridFragment extends Fragment implements PopupMenu.OnMenuItemClickL
         }
 
         @Override
-        protected String[] doInBackground(Void... params) {
+        protected String[] doInBackground(String... params) {
 
             HttpURLConnection urlConnection = null;
             BufferedReader reader = null;
 
             String moviesJsonStr = null;
 
+            String query = "";
+            if (params.length > 0) {
+                query = params[0];
+                Log.v("params0", params[0]);
+            }
+
             try {
                 final String MOVIE_BASE_URL =
-                        "http://api.themoviedb.org/3/movie/";
+                        "http://api.themoviedb.org/3";
+                final String MOVIE = "movie";
+                final String SEARCH = "search";
+                final String QUERY_KEY = "query";
                 final String MOVIE_SORT_POPULAR = "popular";
                 final String MOVIE_SORT_RATING = "top_rated";
+                final String MOVIE_SORT_SEARCH = "movie";
 
-                String MOVIE_SORT_ORDER;
-                if (mSortOrderPopular) {
-                    MOVIE_SORT_ORDER = MOVIE_SORT_POPULAR;
+                Uri builtUri;
+
+                if (mSortOrderSearch) {
+                    builtUri = Uri.parse(MOVIE_BASE_URL)
+                            .buildUpon()
+                            .appendPath(SEARCH)
+                            .appendPath(MOVIE_SORT_SEARCH)
+                            .appendQueryParameter(QUERY_KEY, query)
+                            .appendQueryParameter(API_KEY_LABEL, API_KEY)
+                            .build();
+                } else if (mSortOrderPopular) {
+                    builtUri = Uri.parse(MOVIE_BASE_URL)
+                            .buildUpon()
+                            .appendPath(MOVIE)
+                            .appendPath(MOVIE_SORT_POPULAR)
+                            .appendQueryParameter(API_KEY_LABEL, API_KEY)
+                            .build();
                 } else {
-                    MOVIE_SORT_ORDER = MOVIE_SORT_RATING;
+                    builtUri = Uri.parse(MOVIE_BASE_URL)
+                            .buildUpon()
+                            .appendPath(MOVIE)
+                            .appendPath(MOVIE_SORT_RATING)
+                            .appendQueryParameter(API_KEY_LABEL, API_KEY)
+                            .build();
                 }
 
-                Uri builtUri = Uri.parse(MOVIE_BASE_URL).buildUpon()
-                        .appendPath(MOVIE_SORT_ORDER)
-                        .appendQueryParameter(API_KEY_LABEL, API_KEY)
-                        .build();
-
                 URL url = new URL(builtUri.toString());
-
-                Log.v(LOG_TAG, "Built URI " + builtUri.toString());
 
                 // Create the request to Google Books API, and open the connection
                 urlConnection = (HttpURLConnection) url.openConnection();
@@ -373,7 +411,6 @@ public class GridFragment extends Fragment implements PopupMenu.OnMenuItemClickL
                 String line;
                 while ((line = reader.readLine()) != null) {
                     buffer.append(line + "\n");
-                    Log.v("new line", line);
                 }
 
                 if (buffer.length() == 0) {
@@ -416,6 +453,7 @@ public class GridFragment extends Fragment implements PopupMenu.OnMenuItemClickL
             if (mMovieList.size() > 0) {
                 ((Callback) getActivity()).moviesLoaded(mMovieList.get(0));
             }
+            mSortOrderSearch = false;
         }
     }
 }

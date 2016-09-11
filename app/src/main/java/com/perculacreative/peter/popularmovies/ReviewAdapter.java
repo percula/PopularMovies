@@ -22,10 +22,6 @@ public class ReviewAdapter extends ArrayAdapter<ReviewItem> {
      * @param reviews        A List of objects to display in a list
      */
     public ReviewAdapter(Activity context, ArrayList<ReviewItem> reviews) {
-        // Here, we initialize the ArrayAdapter's internal storage for the context and the list.
-        // the second argument is used when the ArrayAdapter is populating a single TextView.
-        // Because this is a custom adapter for two TextViews and an ImageView, the adapter is not
-        // going to use this second argument, so it can be any value. Here, we used 0.
         super(context, 0, reviews);
     }
 
@@ -50,10 +46,6 @@ public class ReviewAdapter extends ArrayAdapter<ReviewItem> {
         ReviewItem currentReview = getItem(position);
 
         String review = currentReview.getmContent();
-//        if (review.length() > 140) {
-//            review = currentReview.getmContent()
-//                    .substring(0, 140) + "...";
-//        }
 
         // Find the textview and set the text
         ((TextView) listItemView.findViewById(R.id.review_list_author)).setText(currentReview.getmAuthor());

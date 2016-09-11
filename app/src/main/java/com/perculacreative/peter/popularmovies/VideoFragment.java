@@ -90,7 +90,6 @@ public class VideoFragment extends Fragment {
             // Do something if no movie provided yet
         } else {
             if (mSelectedMovie.hasVideos()) {
-                Log.v("Already Has Videos", "Yup");
                 mVideoList.addAll(mSelectedMovie.getmVideos());
                 mVideoAdapter.notifyDataSetChanged();
             } else {
@@ -192,8 +191,6 @@ public class VideoFragment extends Fragment {
 
                 URL videosURL = new URL(vidoesUri.toString());
 
-                Log.v(LOG_TAG, "Videos URI " + vidoesUri.toString());
-
                 // Create the request to API, and open the connection
                 videosURLConnection = (HttpURLConnection) videosURL.openConnection();
                 videosURLConnection.setRequestMethod("GET");
@@ -218,8 +215,6 @@ public class VideoFragment extends Fragment {
                 }
 
                 videosJsonStr = videosBuffer.toString();
-
-                Log.v(LOG_TAG, "Videos String: " + videosJsonStr);
 
             } catch (IOException e) {
                 Log.e(LOG_TAG, "Error ", e);
@@ -250,7 +245,6 @@ public class VideoFragment extends Fragment {
         protected void onPostExecute(String[] result) {
             mVideoAdapter.notifyDataSetChanged();
             progressDialog.dismiss();
-            Log.v("done", "done");
         }
     }
 

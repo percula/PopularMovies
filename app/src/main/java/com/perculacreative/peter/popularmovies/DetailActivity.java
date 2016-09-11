@@ -90,7 +90,6 @@ public class DetailActivity extends AppCompatActivity {
         if (favoriteString != null) {
             // I used help from http://stackoverflow.com/a/22019470/6591585 to save my objects
             // into sharedpreferences
-            Log.v("favoriteString", favoriteString);
             Type type = new TypeToken<List<MovieItem>>() {
             }.getType();
             Gson gson = new Gson();
@@ -110,11 +109,9 @@ public class DetailActivity extends AppCompatActivity {
     private boolean isFavorite(MovieItem movieItem) {
         for (int i = 0; i < mFavoriteMovies.size(); i++) {
             if (mSelectedMovie.getmID().equals(mFavoriteMovies.get(i).getmID())) {
-                Log.v("Favorite?", "Yes");
                 return true;
             }
         }
-        Log.v("Favorite?", "No");
         return false;
     }
 

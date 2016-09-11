@@ -166,7 +166,6 @@ public class MainActivity extends AppCompatActivity implements GridFragment.Call
         SharedPreferences prefs = getSharedPreferences(PREFS_KEY, 0);
         String favoriteString = prefs.getString(FAVORITE_STRING_KEY, null);
         if (favoriteString != null) {
-            Log.v("favoriteString", favoriteString);
             Type type = new TypeToken<List<MovieItem>>() {
             }.getType();
             Gson gson = new Gson();
@@ -186,11 +185,9 @@ public class MainActivity extends AppCompatActivity implements GridFragment.Call
     private boolean isFavorite(MovieItem movieItem) {
         for (int i = 0; i < mFavoriteMovies.size(); i++) {
             if (mSelectedMovie.getmID().equals(mFavoriteMovies.get(i).getmID())) {
-                Log.v("Favorite?", "Yes");
                 return true;
             }
         }
-        Log.v("Favorite?", "No");
         return false;
     }
 
@@ -300,7 +297,6 @@ public class MainActivity extends AppCompatActivity implements GridFragment.Call
     public void moviesLoaded(MovieItem firstMovie) {
         if (isMultipane) {
             mSelectedMovie = firstMovie;
-            Log.v("SelectedTitle", mSelectedMovie.getmTitle());
 
             setInfoFragment();
             setFABIcon();

@@ -158,8 +158,6 @@ public class ReviewFragment extends Fragment {
 
                 URL reviewsURL = new URL(reviewsUri.toString());
 
-                Log.v(LOG_TAG, "Reviews URI " + reviewsUri.toString());
-
                 // Create the request to API, and open the connection
                 reviewsURLConnection = (HttpURLConnection) reviewsURL.openConnection();
                 reviewsURLConnection.setRequestMethod("GET");
@@ -184,8 +182,6 @@ public class ReviewFragment extends Fragment {
                 }
 
                 reviewsJsonStr = reviewsBuffer.toString();
-
-                Log.v(LOG_TAG, "Reviews String: " + reviewsJsonStr);
 
             } catch (IOException e) {
                 Log.e(LOG_TAG, "Error ", e);

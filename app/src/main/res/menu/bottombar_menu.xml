@@ -4,7 +4,7 @@
         android:icon="@drawable/ic_info_black_24dp"
         android:title="@string/menu_info" />
     <item android:id="@+id/movie_trailers"
-        android:icon="@drawable/ic_videocam_black_24dp"
+        android:icon="@drawable/ic_local_movies_black_24dp"
         android:title="@string/menu_trailers"/>
     <item android:id="@+id/movie_reviews"
         android:icon="@drawable/ic_comment_black_24dp"

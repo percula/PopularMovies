@@ -46,18 +46,16 @@
             <ImageButton
                 android:id="@+id/movie_videos"
                 style="@style/Widget.AppCompat.Button.Borderless"
-
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:padding="8dp"
-                android:src="@drawable/ic_videocam_white_24dp"
+                android:src="@drawable/ic_local_movies_white_24dp"
                 android:background="@color/colorPrimary"
                 />
             <ImageButton
                 android:id="@+id/movie_reviews"
                 style="@style/Widget.AppCompat.Button.Borderless"
-
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
