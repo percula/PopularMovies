@@ -49,6 +49,8 @@ public class GridFragment extends Fragment implements PopupMenu.OnMenuItemClickL
     private String API_KEY_LABEL = "api_key";
     private String API_KEY = BuildConfig.API_KEY;
 
+    public static final String MOVIE_LIST_KEY = "MOVIE_LIST";
+
     public GridFragment() {
         // Required empty public constructor
     }
@@ -73,6 +75,14 @@ public class GridFragment extends Fragment implements PopupMenu.OnMenuItemClickL
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_grid, container, false);
 
+        // Retrieve movie list when device is rotated
+        if (savedInstanceState != null) {
+            mMovieList = savedInstanceState.getParcelableArrayList(MOVIE_LIST_KEY);
+            Log.v("Retrieved Movie List", mMovieList.size() + "");
+        } else {
+            getMovieData(rootView);
+        }
+
         // Restore preferences
         SharedPreferences settings = getActivity().getSharedPreferences(MainActivity.PREFS_KEY, 0);
         mSortOrderPopular = settings.getBoolean(MainActivity.PREFS_SORT_KEY, true);
@@ -91,9 +101,6 @@ public class GridFragment extends Fragment implements PopupMenu.OnMenuItemClickL
             }
         });
 
-        // Get the data for the adapter/gridview
-        getMovieData(rootView);
-
         return rootView;
     }
 
@@ -101,6 +108,13 @@ public class GridFragment extends Fragment implements PopupMenu.OnMenuItemClickL
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelableArrayList(MOVIE_LIST_KEY,mMovieList);
+        Log.v("Putting Array List", "NOW");
     }
 
     @Override
@@ -147,6 +161,11 @@ public class GridFragment extends Fragment implements PopupMenu.OnMenuItemClickL
     public MovieItem getMovie(int i) {
         return mMovieList.get(i);
     }
+
+    public ArrayList<MovieItem> getMovieList() {
+        return mMovieList;
+    }
+
 
     /**
      * This checks if there is an internet connection. This is from http://stackoverflow.com/a/4009133.
@@ -344,10 +363,11 @@ public class GridFragment extends Fragment implements PopupMenu.OnMenuItemClickL
         protected void onPostExecute(String[] result) {
             mMovieAdapter.notifyDataSetChanged();
             progressDialog.dismiss();
-//            if (mMovieList.size() > 0) {
-//                Log.v("postexecute", mMovieList.get(0).getmTitle());
-//                ((Callback) getActivity()).moviesLoaded();
-//            }
+
+            // If there were any movies downloaded, show the first one by default
+            if (mMovieList.size() > 0) {
+                ((Callback) getActivity()).moviesLoaded();
+            }
         }
     }
 }

@@ -98,6 +98,10 @@ public class VideoFragment extends Fragment {
         return view;
     }
 
+    public MovieItem getSelectedMovie() {
+        return mSelectedMovie;
+    }
+
     public class FetchVideosTask extends AsyncTask<Void, Void, String[]> {
 
         private final String LOG_TAG = FetchVideosTask.class.getSimpleName();

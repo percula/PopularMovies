@@ -16,10 +16,7 @@ public class DetailActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_detail2);
-
-//        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-//        setSupportActionBar(toolbar);
+        setContentView(R.layout.activity_detail);
 //
         // Get a support ActionBar corresponding to this toolbar
         ActionBar ab = getSupportActionBar();
@@ -81,7 +78,7 @@ public class DetailActivity extends AppCompatActivity {
         detailFragment.setArguments(args);
 
         getSupportFragmentManager().beginTransaction()
-                .replace(R.id.fragment_detail_scrollview, detailFragment, MainActivity.DETAILFRAGMENT_TAG)
+                .replace(R.id.fragment_detail, detailFragment, MainActivity.DETAILFRAGMENT_TAG)
                 .commit();
     }
 
@@ -93,7 +90,7 @@ public class DetailActivity extends AppCompatActivity {
         videoFragment.setArguments(args);
 
         getSupportFragmentManager().beginTransaction()
-                .replace(R.id.fragment_detail_scrollview, videoFragment, MainActivity.DETAILFRAGMENT_TAG)
+                .replace(R.id.fragment_detail, videoFragment, MainActivity.DETAILFRAGMENT_TAG)
                 .commit();
     }
 
@@ -105,7 +102,7 @@ public class DetailActivity extends AppCompatActivity {
         reviewFragment.setArguments(args);
 
         getSupportFragmentManager().beginTransaction()
-                .replace(R.id.fragment_detail_scrollview, reviewFragment, MainActivity.DETAILFRAGMENT_TAG)
+                .replace(R.id.fragment_detail, reviewFragment, MainActivity.DETAILFRAGMENT_TAG)
                 .commit();
     }
 

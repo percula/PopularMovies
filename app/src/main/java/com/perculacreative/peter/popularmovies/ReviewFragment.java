@@ -79,6 +79,10 @@ public class ReviewFragment extends Fragment {
         return view;
     }
 
+    public MovieItem getSelectedMovie() {
+        return mSelectedMovie;
+    }
+
 
     public class FetchReviewsTask extends AsyncTask<Void, Void, String[]> {
 

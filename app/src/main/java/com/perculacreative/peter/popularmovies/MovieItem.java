@@ -15,8 +15,8 @@ public class MovieItem implements Parcelable {
     private String mRelease;
     private String mPlot;
     private String mVote;
-    private ArrayList<VideoItem> mVideos;
-    private ArrayList<ReviewItem> mReviews;
+    private ArrayList<VideoItem> mVideos = new ArrayList<>();
+    private ArrayList<ReviewItem> mReviews = new ArrayList<>();
 
     public MovieItem(String id, String title, String poster, String release, String vote, String plot) {
         mID = id;

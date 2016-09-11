@@ -8,8 +8,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.ListAdapter;
-import android.widget.ListView;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
@@ -25,6 +23,7 @@ import java.util.Locale;
 public class DetailFragment extends Fragment {
 
     private MovieItem mSelectedMovie;
+    public static final String SELECTED_MOVIE_KEY = "SELECTED_MOVIE";
 
     private boolean isMultipane;
 
@@ -39,47 +38,37 @@ public class DetailFragment extends Fragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_detail, container, false);
 
+        if (savedInstanceState != null) {
+            if (savedInstanceState.containsKey(SELECTED_MOVIE_KEY)) {
+                mSelectedMovie = savedInstanceState.getParcelable(MainActivity.SELECTED_MOVIE_KEY);
+                savedInstanceState.clear();
+//                Log.v("Get Movie From Save", mSelectedMovie.getmTitle());
+            } else {
+                Log.v("Get Movie From Save", "null");
+            }
+        }
+
         // Get selected movie
         Bundle bundle = this.getArguments();
 
         // Restore selected movie on screen rotation or from fragment creation
-        if (savedInstanceState != null && savedInstanceState.containsKey(MainActivity.SELECTED_MOVIE_KEY)) {
-            mSelectedMovie = savedInstanceState.getParcelable(MainActivity.SELECTED_MOVIE_KEY);
-            if (mSelectedMovie != null) {
-                Log.v("Restore Saved Movie", mSelectedMovie.getmTitle());
+        if (bundle != null) {
+            if (bundle.containsKey(MainActivity.SELECTED_MOVIE_KEY)) {
+                mSelectedMovie = bundle.getParcelable(MainActivity.SELECTED_MOVIE_KEY);
+                bundle.clear();
+//                Log.v("Get Movie From Bundle", mSelectedMovie.getmTitle());
+            } else {
+                Log.v("Get Movie From Bundle", "null");
             }
-        } else if (bundle != null) {
-            mSelectedMovie = bundle.getParcelable(MainActivity.SELECTED_MOVIE_KEY);
-            Log.v("SavedInstanceState", "DoesntHaveParcelable");
+
         }
 
         // Check if a movie has been selected
         if (mSelectedMovie == null) {
             // Do something if no movie provided yet
+            Log.v("Selected Movie", "Is Null");
+            return view;
         } else {
-            // Create variable for poster imageview for later use
-//            ImageView backgroundImageView;
-
-            // Determine if in multi-pane mode or not
-//            if (getActivity().findViewById(R.id.toolbar_layout) != null) {
-//                isMultipane = false;
-//
-//                // Set title for non-multipane mode
-//                ((CollapsingToolbarLayout) getActivity().findViewById(R.id.toolbar_layout)).setTitle(mSelectedMovie.getmTitle());
-//
-//                // Find poster imageview
-//                backgroundImageView = (ImageView) getActivity().findViewById(R.id.poster_background_activity);
-//            } else {
-//                isMultipane = true;
-//
-//                // Set fragment title to be visible (it is hidden when in activity mode)
-//                ((RelativeLayout) view.findViewById(R.id.detail_fragment_title)).setVisibility(View.VISIBLE);
-//                ((TextView) view.findViewById(R.id.title)).setText(mSelectedMovie.getmTitle());
-//
-//                // Find poster imageview
-//                backgroundImageView = (ImageView) view.findViewById(R.id.poster_background_fragment);
-//            }
-
 
             // Set release date
             String date = mSelectedMovie.getmRelease();
@@ -105,39 +94,13 @@ public class DetailFragment extends Fragment {
             // Set poster
             ImageView imageView = (ImageView) view.findViewById(R.id.image);
             Picasso.with(getContext()).load("http://image.tmdb.org/t/p/w185/" + mSelectedMovie.getmPoster()).into(imageView);
-
-            // Add image to toolbar background
-//            Picasso.with(getContext()).load("http://image.tmdb.org/t/p/w185/" + mSelectedMovie.getmPoster()).transform(new BlurTransformation(getContext())).into(backgroundImageView);
-        }
-        return view;
-    }
-
-    public MovieItem getSelectedMovie() {
-        return mSelectedMovie;
-    }
-
-    // In order to re-size the listviews to fit all the content, since they can't scroll within an already
-    // scrolling activity, I used some nice code from: http://stackoverflow.com/a/28713754.
-    // Is there a better, cleaner way to do this than setting the layoutParams?
-    public static class ListUtils {
-        public static void setDynamicHeight(ListView mListView) {
-            ListAdapter mListAdapter = mListView.getAdapter();
-            if (mListAdapter == null) {
-                // when adapter is null
-                return;
-            }
-            int height = 0;
-            int desiredWidth = View.MeasureSpec.makeMeasureSpec(mListView.getWidth(), View.MeasureSpec.UNSPECIFIED);
-            for (int i = 0; i < mListAdapter.getCount(); i++) {
-                View listItem = mListAdapter.getView(i, null, mListView);
-                listItem.measure(desiredWidth, View.MeasureSpec.UNSPECIFIED);
-                height += listItem.getMeasuredHeight();
-            }
-            ViewGroup.LayoutParams params = mListView.getLayoutParams();
-            params.height = height + (mListView.getDividerHeight() * (mListAdapter.getCount() - 1));
-            mListView.setLayoutParams(params);
-            mListView.requestLayout();
+            return view;
         }
     }
 
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelable(SELECTED_MOVIE_KEY,mSelectedMovie);
+    }
 }
