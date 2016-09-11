@@ -2,7 +2,10 @@ package com.perculacreative.peter.popularmovies;
 
 
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -13,6 +16,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -90,16 +94,33 @@ public class VideoFragment extends Fragment {
                 mVideoList.addAll(mSelectedMovie.getmVideos());
                 mVideoAdapter.notifyDataSetChanged();
             } else {
-                Log.v("Getting Videos", "GO");
-                FetchVideosTask fetchVideosTask = new FetchVideosTask();
-                fetchVideosTask.execute();
+                getVideoData(view);
             }
         }
         return view;
     }
 
-    public MovieItem getSelectedMovie() {
-        return mSelectedMovie;
+    private void getVideoData(View view) {
+        if (isOnline()) {
+            view.findViewById(R.id.network_error).setVisibility(View.GONE);
+            FetchVideosTask fetchVideosTask = new FetchVideosTask();
+            fetchVideosTask.execute();
+        } else {
+            view.findViewById(R.id.network_error).setVisibility(View.VISIBLE);
+            Toast.makeText(getContext(), getString(R.string.network_error), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    /**
+     * This checks if there is an internet connection. This is from http://stackoverflow.com/a/4009133.
+     *
+     * @return boolean whether the user has an internet connection.
+     */
+    public boolean isOnline() {
+        ConnectivityManager cm =
+                (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = cm.getActiveNetworkInfo();
+        return netInfo != null && netInfo.isConnectedOrConnecting();
     }
 
     public class FetchVideosTask extends AsyncTask<Void, Void, String[]> {

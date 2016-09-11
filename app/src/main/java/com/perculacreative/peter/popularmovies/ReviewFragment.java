@@ -1,6 +1,9 @@
 package com.perculacreative.peter.popularmovies;
 
 
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -10,6 +13,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -72,17 +76,34 @@ public class ReviewFragment extends Fragment {
                 mReviewList.addAll(mSelectedMovie.getmReviews());
                 mReviewAdapter.notifyDataSetChanged();
             } else {
-                FetchReviewsTask fetchReviewsTask = new FetchReviewsTask();
-                fetchReviewsTask.execute();
+                getReviewData(view);
             }
         }
         return view;
     }
 
-    public MovieItem getSelectedMovie() {
-        return mSelectedMovie;
+    private void getReviewData(View view) {
+        if (isOnline()) {
+            view.findViewById(R.id.network_error).setVisibility(View.GONE);
+            FetchReviewsTask fetchReviewsTask = new FetchReviewsTask();
+            fetchReviewsTask.execute();
+        } else {
+            view.findViewById(R.id.network_error).setVisibility(View.VISIBLE);
+            Toast.makeText(getContext(), getString(R.string.network_error), Toast.LENGTH_SHORT).show();
+        }
     }
 
+    /**
+     * This checks if there is an internet connection. This is from http://stackoverflow.com/a/4009133.
+     *
+     * @return boolean whether the user has an internet connection.
+     */
+    public boolean isOnline() {
+        ConnectivityManager cm =
+                (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = cm.getActiveNetworkInfo();
+        return netInfo != null && netInfo.isConnectedOrConnecting();
+    }
 
     public class FetchReviewsTask extends AsyncTask<Void, Void, String[]> {
 
