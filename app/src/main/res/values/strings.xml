@@ -10,6 +10,7 @@
     <string name="loading">Loading Movies &#8230; </string>
     <string name="search_title">Search</string>
     <string name="search_hint">Enter movie title</string>
+    <string name="no_movies">No Movies Found</string>
 
 
     <!--Detail Activity Strings-->

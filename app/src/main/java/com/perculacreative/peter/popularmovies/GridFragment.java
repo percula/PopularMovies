@@ -107,6 +107,7 @@ public class GridFragment extends Fragment implements PopupMenu.OnMenuItemClickL
 
         // Get a reference to the GridView, and attach this adapter to it.
         GridView gridView = (GridView) rootView.findViewById(R.id.gridview);
+        gridView.setEmptyView(rootView.findViewById(R.id.empty_view));
         gridView.setAdapter(mMovieAdapter);
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
