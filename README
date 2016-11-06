@@ -1,5 +1,0 @@
-To add an API key to this application, create a "secrets.properties" file in the root folder. 
-If you do not have an API, you may get one from https://www.themoviedb.org. 
-Then add your api in the following format to the "secrets.properties" file: 
-
-API_KEY=123456789012345678901234567890
